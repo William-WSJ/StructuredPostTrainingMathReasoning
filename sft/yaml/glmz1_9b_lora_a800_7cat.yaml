@@ -1,0 +1,64 @@
+### 7cat 配置（严格从头训，不改数据/不改 prefill）
+### 目标：保持 7cat 格式输出，同时尽量减少正确率下滑
+
+model_name_or_path: /root/autodl-tmp/model/ZhipuAI/GLM-Z1-9B-0414
+stage: sft
+do_train: true
+do_eval: true
+finetuning_type: lora
+
+# 从头训里更稳的组合
+lora_target: q_proj,v_proj
+lora_rank: 8
+lora_alpha: 8
+lora_dropout: 0.05
+use_rslora: true
+use_dft_loss: false
+
+packing: false
+neat_packing: false
+
+dataset: tr_7cat_reasoning_train
+eval_dataset: tr_7cat_reasoning_eval
+template: glmz1
+
+cutoff_len: 12288
+overwrite_cache: true
+preprocessing_num_workers: 16
+
+seed: 42
+
+# 避免上次欠拟合（过弱），也避免旧配置过强带偏
+num_train_epochs: 0.18
+
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 8
+
+learning_rate: 1e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.02
+
+bf16: true
+train_on_prompt: false
+
+weight_decay: 0.0
+max_grad_norm: 0.3
+
+resume_from_checkpoint: false
+save_total_limit: 8
+
+eval_strategy: steps
+eval_steps: 25
+
+save_strategy: steps
+save_steps: 25
+
+# 按 eval loss 自动选择 best checkpoint
+load_best_model_at_end: true
+metric_for_best_model: loss
+
+early_stopping_steps: 6
+
+output_dir: ./saves/GLM-Z1-9B/lora/7cat_reasoning_A800
+flash_attn: fa2

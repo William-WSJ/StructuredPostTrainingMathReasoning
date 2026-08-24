@@ -1,0 +1,52 @@
+### 模型与路径配置
+model_name_or_path: /root/autodl-tmp/model/Qwen/Qwen2___5-Math-7B
+stage: sft
+do_train: true
+do_eval: true
+finetuning_type: lora
+lora_target: all
+# 重点修改：降低 Rank 到 64，Alpha 到 128。
+# 理由：7类数据逻辑更密，低 Rank 能强迫模型利用底座已有的数学逻辑，而不是强行记住训练集。
+lora_rank: 64
+lora_alpha: 128
+lora_dropout: 0.05
+
+### 数据集配置
+# 重点修改：切换到你刚刚配置好的 7cat 数据集名称
+dataset: tr_baseline_7cat_train
+eval_dataset: tr_baseline_7cat_eval
+template: qwen
+cutoff_len: 12288
+overwrite_cache: true
+preprocessing_num_workers: 16
+
+### 训练参数
+num_train_epochs: 5.0
+# 显存安全建议：7类数据更长，建议 per_device_train_batch_size 设为 2
+# 这样 gradient_accumulation_steps 设为 16，总 Batch Size 依然是 32
+per_device_train_batch_size: 4 
+gradient_accumulation_steps: 8
+learning_rate: 5.0e-5
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+
+### 评估与保存
+resume_from_checkpoint: false
+save_total_limit: 3
+eval_strategy: steps
+eval_steps: 100
+save_strategy: steps
+save_steps: 100
+load_best_model_at_end: true
+metric_for_best_model: loss
+plot_loss: true
+
+### 性能加速 (A800 必开)
+gradient_checkpointing: true
+flash_attn: fa2
+optim: adamw_torch_fused
+
+### 输出路径
+# 重点修改：区分 5cat 和 7cat 的存档路径
+output_dir: ./saves/Qwen2.5-Math-7B/lora/baseline_7cat_A800_E5

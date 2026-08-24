@@ -1,0 +1,40 @@
+### 模型与路径配置
+model_name_or_path: /root/autodl-tmp/model/deepseek-ai/deepseek-math-7b-base
+stage: sft
+do_train: true
+do_eval: true
+finetuning_type: lora
+lora_target: all
+lora_rank: 64
+lora_alpha: 128
+lora_dropout: 0.05
+
+### 数据集配置 (修改点)
+dataset: tr_baseline_7cat_train        # 切换到 7-cat 训练集
+eval_dataset: tr_baseline_7cat_eval    # 切换到 7-cat 验证集
+template: deepseek
+cutoff_len: 12288                      # 保持 12k，7-cat 的 KP 环节会让文本更长
+overwrite_cache: true
+preprocessing_num_workers: 16
+
+### 训练参数
+num_train_epochs: 3.0
+per_device_train_batch_size: 4
+gradient_accumulation_steps: 8
+learning_rate: 3.0e-5                  # 微调：从 2e-5 提升到 3e-5，加强对 KP 规划逻辑的吸收
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+
+### 评估与保存
+resume_from_checkpoint: false
+save_total_limit: 3
+eval_strategy: steps
+eval_steps: 100
+save_strategy: steps
+save_steps: 100
+load_best_model_at_end: true
+metric_for_best_model: loss
+
+### 输出路径 (修改点)
+output_dir: ./saves/DeepSeek-Math-7B/lora/baseline_7cat_A800_E3

@@ -1,0 +1,51 @@
+### 模型与路径配置
+model_name_or_path: /root/autodl-tmp/model/Qwen/Qwen3-8B
+stage: sft
+do_train: true
+do_eval: true
+finetuning_type: lora
+lora_target: q_proj,v_proj
+
+### 微调参数调整 (核心：轻量化)
+lora_rank: 8
+lora_alpha: 8
+lora_dropout: 0.1
+use_rslora: true
+
+### 数据集配置
+# 这里使用我们刚才转换好的 reasoning 版本数据集
+dataset: tr_7cat_reasoning_train
+eval_dataset: tr_7cat_reasoning_eval
+template: qwen3                # 使用你手动注册的 qwen3 模板
+cutoff_len: 12288              # 深度思考内容极长，必须维持 12k 以上
+overwrite_cache: true
+preprocessing_num_workers: 16
+
+### 训练参数
+# 【关键调整】
+# 轮数：建议 3.0 轮。推理模型过拟合会导致“复读”或“逻辑锁死”，3轮足够学格式。
+# 学习率：建议 1e-5。Reasoning 模型非常脆，5e-5 可能会洗掉它原生的思考权重。
+num_train_epochs: 0.4
+per_device_train_batch_size: 4 # 8B 模型 + 12k 长度极占显存，A800 建议设为 2
+gradient_accumulation_steps: 8 # 保持总 Batch Size 为 32 (2 * 16)
+learning_rate: 3e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true                     # A800 必须开启
+
+train_on_prompt: false
+weight_decay: 0.01      # 防止权重漂移
+max_grad_norm: 0.5      # 梯度裁剪，保证训练平稳
+
+### 评估与保存
+resume_from_checkpoint: false
+save_total_limit: 3
+eval_strategy: steps
+eval_steps: 100
+save_strategy: steps
+save_steps: 100
+load_best_model_at_end: true
+metric_for_best_model: loss
+
+output_dir: ./saves/Qwen3-8B/lora/7cat_reasoning_A800_E3_2
+flash_attn: fa2                # 务必开启 FlashAttention-2 优化

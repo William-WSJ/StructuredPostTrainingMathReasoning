@@ -1,0 +1,56 @@
+### 模型与路径配置
+model_name_or_path: /root/autodl-tmp/model/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+stage: sft
+do_train: true
+do_eval: true
+finetuning_type: lora
+lora_target: q_proj,v_proj
+lora_rank: 6
+lora_alpha: 12
+lora_dropout: 0.03
+use_rslora: true
+
+### 数据集配置
+dataset: tr_7cat_reasoning_train
+eval_dataset: tr_7cat_reasoning_eval
+template: deepseek_r1_distill_qwen  # inferred from saved chat_template.jinja
+cutoff_len: 12288
+overwrite_cache: true
+preprocessing_num_workers: 16
+
+### 训练参数
+num_train_epochs: 0.16
+max_steps: -1
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 8
+learning_rate: 8e-7
+lr_scheduler_type: cosine
+warmup_ratio: 0.08
+weight_decay: 0.0
+max_grad_norm: 0.3
+bf16: true
+seed: 42
+optimizer: adamw_torch_fused
+
+### 评估与保存
+resume_from_checkpoint: false
+save_total_limit: 20
+eval_strategy: steps
+eval_steps: 10
+save_strategy: steps
+save_steps: 10
+load_best_model_at_end: false
+metric_for_best_model: null
+greater_is_better: null
+best_model_checkpoint: null  # not recorded in trainer_state.json
+best_metric: null  # not recorded in trainer_state.json
+
+output_dir: ./saves/DeepSeek-R1-Distill-Qwen-7B/lora/7cat_reasoning_A800
+flash_attn: fa2
+
+### 恢复说明
+# This YAML was reconstructed from adapter_config.json, README.md, trainer_state.json,
+# train_results.json, and all_results.json under:
+# /root/autodl-tmp/model/wangsijin/R1-Distill-Qwen-LoRA-graduation/7cat_reasoning_A800
+# training_args.bin was later recovered in the conda lf environment.

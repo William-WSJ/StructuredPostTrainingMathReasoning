@@ -9,6 +9,7 @@ This folder contains the scripts used to score outputs and generate the paper fi
 - `plot_results_clean.py`: aggregates result JSON files and generates the clean summary figures
 - `plot_results_figures.py`: generates the paper-style figures from the same aggregated results
 - `plot_raw_output_diagnostics.py`: analyzes raw generation outputs by token bins
+- `bash`: example inference code of qwen3
 
 ## 1. Relaxed Scoring
 
